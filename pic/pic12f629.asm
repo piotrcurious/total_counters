@@ -140,12 +140,7 @@ read_eeprom
     bsf EECON1, RD ; start the read operation
     bcf STATUS, RP0 ; select bank 0
     movf EEDATA, w ; get the eeprom data
-    movwf eedata ; store it in the variable
-    andlw 0x0F ; mask the lower nibble
     movwf temp0 ; store it in the least significant byte of the temp variable
-    swapf eedata, w ; swap the nibbles of the eeprom data
-    andlw 0x0F ; mask the lower nibble
-    movwf temp1 ; store it in the next byte of the temp variable
     incf eeadr, f ; increment the eeprom address
     andlw EEPROM_MASK ; mask the address
     movwf EEADR ; store it in the eeprom register
@@ -153,12 +148,26 @@ read_eeprom
     bsf EECON1, RD ; start the read operation
     bcf STATUS, RP0 ; select bank 0
     movf EEDATA, w ; get the eeprom data
-    movwf eedata ; store it in the variable
-    andlw 0x0F ; mask the lower nibble
+    movwf temp1 ; store it in the next byte of the temp variable
+
+    incf eeadr, f ; increment the eeprom address
+    andlw EEPROM_MASK ; mask the address
+    movwf EEADR ; store it in the eeprom register
+    bsf STATUS, RP0 ; select bank 1
+    bsf EECON1, RD ; start the read operation
+    bcf STATUS, RP0 ; select bank 0
+    movf EEDATA, w ; get the eeprom data
     movwf temp2 ; store it in the next byte of the temp variable
-    swapf eedata, w ; swap the nibbles of the eeprom data
-    andlw 0x0F ; mask the lower nibble
-    movwf temp3 ; store it in the most significant byte of the temp variable
+
+    incf eeadr, f ; increment the eeprom address
+    andlw EEPROM_MASK ; mask the address
+    movwf EEADR ; store it in the eeprom register
+    bsf STATUS, RP0 ; select bank 1
+    bsf EECON1, RD ; start the read operation
+    bcf STATUS, RP0 ; select bank 0
+    movf EEDATA, w ; get the eeprom data
+    movwf temp3 ; store it in the next byte of the temp variable
+
     CMP32 temp3, temp2, temp1, temp0, maxdata3, maxdata2, maxdata1, maxdata0 ; compare the temp variable
         ; compare the temp variable with the max data
     btfss STATUS, Z ; skip if equal
@@ -167,7 +176,7 @@ read_eeprom
     goto next_addr ; go to the next address otherwise
 update_max
     movf eeadr, w ; get the current eeprom address
-    sublw 2 ; subtract 2 to get the previous address
+    sublw 4 ; subtract 2 to get the previous address
     andlw EEPROM_MASK ; mask the address
     movwf maxaddr ; store it in the max address variable
     movf temp3, w ; get the most significant byte of the temp variable
