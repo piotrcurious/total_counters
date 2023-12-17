@@ -10,8 +10,8 @@ include "p12f629.inc" ; include the device header file
 __CONFIG _MCLRE_OFF & _CP_OFF & _WDT_OFF & _INTRC_OSC_NOCLKOUT ; set the configuration bits
 
 ; define some constants
-#define EEPROM_SIZE 256 ; size of the eeprom in bytes
-#define EEPROM_MASK 0xFF ; mask for the eeprom address
+#define EEPROM_SIZE 128 ; size of the eeprom in bytes
+#define EEPROM_MASK 0x7F ; mask for the eeprom address
 #define BAUD_RATE 9600 ; baud rate for serial communication
 #define DIVIDER (((_XTAL_FREQ/BAUD_RATE)/4)-1) ; divider for the timer0
 #define _XTAL_FREQ 4000000 ; oscillator frequency in Hz
