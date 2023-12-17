@@ -176,7 +176,7 @@ read_eeprom
     goto next_addr ; go to the next address otherwise
 update_max
     movf eeadr, w ; get the current eeprom address
-    sublw 4 ; subtract 2 to get the previous address
+    sublw 4 ; subtract 4 to get the previous address
     andlw EEPROM_MASK ; mask the address
     movwf maxaddr ; store it in the max address variable
     movf temp3, w ; get the most significant byte of the temp variable
@@ -199,15 +199,20 @@ next_addr
 end_read
     INC32 maxdata3, maxdata2, maxdata1, maxdata0, counter3, counter2, counter1, counter0 ; increment the max data and store it in the counter variable
     movf maxaddr, w ; get the max address
-    incf w, f ; increment it
-    andlw EEPROM_MASK ; mask it
+    incf w,f ; move ahead 4 bytes
+    incf w,f ; increment it
+    incf w,f ; increment it
+    incf w,f ; increment it
+    andlw EEPROM_MASK ; mask the address
+       ;this is enough to make it wrap to 0 if it's last address 
+
+   ; xorlw EEPROM_MASK ; check if it is the last address
+   ; btfss STATUS, Z ; skip if not
+   ; goto wraparound_address
+
     movwf eeadr ; store it in the eeprom address variable
-    movf counter0, w ; get the least significant byte of the counter
-    andlw 0x0F ; mask the lower nibble
+    movf counter0, w ; get the byte of the counter
     movwf eedata ; store it in the eeprom data variable
-    swapf counter0, w ; swap the nibbles of the counter
-    andlw 0x0F ; mask the lower nibble
-    iorwf eedata, f ; or it with the eeprom data
     bsf STATUS, RP0 ; select bank 1
     bcf EECON1, EEPGD ; select the data memory
     bcf EECON1, WREN ; disable the write operation
@@ -233,15 +238,12 @@ end_read
     bcf EECON1, WRERR ; clear the write error bit
     bsf INTCON, GIE ; enable the global interrupt
     bcf STATUS, RP0 ; select bank 0
+
     incf eeadr, f ; increment the eeprom address
     andlw EEPROM_MASK ; mask it
     movwf EEADR ; store it in the eeprom register
     movf counter1, w ; get the next byte of the counter
-    andlw 0x0F ; mask the lower nibble
     movwf eedata ; store it in the eeprom data variable
-    swapf counter1, w ; swap the nibbles of the counter
-    andlw 0x0F ; mask the lower nibble
-    iorwf eedata, f ; or it with the eeprom data
     bsf STATUS, RP0 ; select bank 1
     bcf EECON1, EEPGD ; select the data memory
     bcf EECON1, WREN ; disable the write operation
@@ -271,11 +273,7 @@ end_read
     andlw EEPROM_MASK ; mask it
     movwf EEADR ; store it in the eeprom register
     movf counter2, w ; get the next byte of the counter
-    andlw 0x0F ; mask the lower nibble
     movwf eedata ; store it in the eeprom data variable
-    swapf counter2, w ; swap the nibbles of the counter
-    andlw 0x0F ; mask the lower nibble
-    iorwf eedata, f ; or it with the eeprom data
     bsf STATUS, RP0 ; select bank 1
     bcf EECON1, EEPGD ; select the data memory
     bcf EECON1, WREN ; disable the write operation
@@ -305,11 +303,7 @@ end_read
     andlw EEPROM_MASK ; mask it
     movwf EEADR ; store it in the eeprom register
     movf counter3, w ; get the most significant byte of the counter
-    andlw 0x0F ; mask the lower nibble
     movwf eedata ; store it in the eeprom data variable
-    swapf counter3, w ; swap the nibbles of the counter
-    andlw 0x0F ; mask the lower nibble
-    iorwf eedata, f ; or it with the eeprom data
     bsf STATUS, RP0 ; select bank 1
         ; store the most significant byte of the counter in the eeprom
     bcf EECON1, EEPGD ; select the data memory
